@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>San Pablo Tourism - Seven Lakes</title> <!-- Load Tailwind CSS via CDN --> 
+  <script src="https://cdn.tailwindcss.com"></script> <!-- Load Lucide Icons --> 
+  <script src="https://unpkg.com/lucide@latest"></script> 
+  <style>
+        /* Custom Font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Fallback in case video fails to load */
+            background-color: #000;
+        }
+
+        /* --- VIDEO BACKGROUND STYLES (New) --- */
+        #video-background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -2; /* Ensures it stays behind all content */
+        }
+        #video-background {
+            /* Ensures the video covers the whole screen */
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover; /* Important for scaling */
+        }
+        #video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* Dark overlay for text contrast */
+            z-index: -1; /* Above the video but below the main content */
+        }
+        /* --- END VIDEO BACKGROUND STYLES --- */
+
+        /* Utility for centering the Lucide icons */
+        .icon-center {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Ensure smooth navigation transition */
+        .content-view {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Hide content initially */
+        .hidden-view {
+            display: none;
+        }
+
+        /* Styling for the map card border, matching the blue outline in the user's image */
+        .map-card-border {
+            border: 4px solid #3b82f6; /* Tailwind blue-500 equivalent */
+        }
+    </style> 
+ </head> 
+ <body class="min-h-screen flex flex-col"> <!-- Video Background Container (New) --> 
+  <div id="video-background-container"> <!-- 
+            NOTE: This is a placeholder video URL. 
+            For a real application, you must replace this with a video of a San Pablo lake 
+            that you host securely (e.g., on a CDN).
+        --> 
+   <video id="video-background" autoplay loop muted playsinline poster="https://placehold.co/1920x1080/0d47a1/ffffff/png?text=Loading+Video+Background"> 
+    <source src="content://media/external/downloads/1000038470" type="video/mp4"> <!-- Fallback text if browser doesn't support video --> Your browser does not support the video tag. Please update your browser. 
+   </video> 
+   <div id="video-overlay"></div> 
+  </div> <!-- Header & Navigation --> 
+  <header class="bg-white shadow-md sticky top-0 z-50"> 
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3"> 
+    <div class="flex items-center space-x-2"> <i data-lucide="mountain" class="w-8 h-8 text-blue-800"></i> 
+     <h1 class="text-xl font-bold text-blue-800 hidden sm:block">San Pablo Tourism</h1> 
+    </div> 
+    <nav id="nav-tabs" class="flex space-x-1 sm:space-x-2 text-sm sm:text-base"> <!-- Navigation tabs rendered by JS --> 
+    </nav> <button onclick="App.toggleEmergencyModal(true)" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200 flex items-center shadow-md text-sm sm:text-base"> <i data-lucide="alert-triangle" class="w-5 h-5 mr-0 sm:mr-2"></i> <span class="hidden sm:inline">Emergency</span> </button> 
+   </div> 
+  </header> <!-- Main Content Area --> 
+  <main id="main-content" class="pb-12 pt-4 flex-grow"> <!-- Content sections will be dynamically rendered here --> <!-- Home View --> 
+   <section id="view-home" class="content-view max-w-7xl mx-auto hidden-view px-4"></section> <!-- Attractions View --> 
+   <section id="view-attractions" class="content-view max-w-7xl mx-auto hidden-view px-4"></section> <!-- Attraction Detail View --> 
+   <section id="view-detail" class="content-view max-w-4xl mx-auto hidden-view px-4"></section> <!-- Guides View --> 
+   <section id="view-guides" class="content-view max-w-7xl mx-auto hidden-view px-4"></section> <!-- Map View --> 
+   <section id="view-map" class="content-view max-w-7xl mx-auto hidden-view px-4"></section> <!-- Appointments View --> 
+   <section id="view-appointments" class="content-view max-w-xl mx-auto hidden-view px-4"></section> 
+  </main> <!-- Footer / Closing Bar --> 
+  <footer class="bg-blue-900 text-white mt-auto"> 
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> 
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 border-b border-blue-700 pb-6"> <!-- Logo and Mission --> 
+     <div> 
+      <div class="flex items-center space-x-2 mb-3"> <i data-lucide="mountain" class="w-6 h-6 text-blue-300"></i> 
+       <h4 class="text-lg font-bold">San Pablo Tourism</h4> 
+      </div> 
+      <p class="text-sm text-blue-200">Exploring the beauty and heritage of the City of Seven Lakes.</p> 
+     </div> <!-- Quick Links --> 
+     <div> 
+      <h5 class="font-semibold mb-3 text-blue-100">Quick Links</h5> 
+      <ul class="space-y-2 text-sm"> 
+       <li><a href="#" onclick="App.navigate('home')" class="text-blue-200 hover:text-white transition-colors">Home</a></li> 
+       <li><a href="#" onclick="App.navigate('attractions')" class="text-blue-200 hover:text-white transition-colors">Attractions</a></li> 
+       <li><a href="#" onclick="App.navigate('map')" class="text-blue-200 hover:text-white transition-colors">Map</a></li> 
+       <li><a href="#" onclick="App.navigate('guides')" class="text-blue-200 hover:text-white transition-colors">Book a Guide</a></li> 
+      </ul> 
+     </div> <!-- Contact Info --> 
+     <div> 
+      <h5 class="font-semibold mb-3 text-blue-100">Contact Us</h5> 
+      <ul class="space-y-2 text-sm"> 
+       <li class="flex items-center"> <i data-lucide="phone" class="w-4 h-4 mr-2 text-blue-300 icon-center"></i> <a href="tel:+63495628888" class="text-blue-200 hover:text-white transition-colors">(049) 562-8888</a> </li> 
+       <li class="flex items-center"> <i data-lucide="mail" class="w-4 h-4 mr-2 text-blue-300 icon-center"></i> <a href="mailto:info@sanpablo.gov.ph" class="text-blue-200 hover:text-white transition-colors">info@sanpablo.gov.ph</a> </li> 
+       <li class="flex items-center"> <i data-lucide="map-pin" class="w-4 h-4 mr-2 text-blue-300 icon-center"></i> <span class="text-blue-200">San Pablo City Hall</span> </li> 
+      </ul> 
+     </div> <!-- Legal and Social --> 
+     <div> 
+      <h5 class="font-semibold mb-3 text-blue-100">Legal</h5> 
+      <ul class="space-y-2 text-sm"> 
+       <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Privacy Policy</a></li> 
+       <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Terms of Use</a></li> 
+       <li><a href="#" class="text-blue-200 hover:text-white transition-colors">Sitemap</a></li> 
+      </ul> 
+      <div class="flex space-x-4 mt-4"> <a href="https://facebook.com" target="_blank" class="text-blue-300 hover:text-white transition-colors" aria-label="Facebook"> <i data-lucide="facebook" class="w-6 h-6 icon-center"></i> </a> <a href="https://instagram.com" target="_blank" class="text-blue-300 hover:text-white transition-colors" aria-label="Instagram"> <i data-lucide="instagram" class="w-6 h-6 icon-center"></i> </a> <a href="https://twitter.com" target="_blank" class="text-blue-300 hover:text-white transition-colors" aria-label="Twitter"> <i data-lucide="twitter" class="w-6 h-6 icon-center"></i> </a> 
+      </div> 
+     </div> 
+    </div> <!-- Copyright Bar --> 
+    <div class="mt-6 pt-4 border-t border-blue-700 text-center"> 
+     <p class="text-sm text-blue-300">© 2024 San Pablo City Tourism. All rights reserved.</p> 
+    </div> 
+   </div> 
+  </footer> <!-- Emergency Modal --> 
+  <div id="emergency-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] justify-center items-center p-4 hidden"> 
+   <div class="bg-white rounded-xl w-full max-w-lg shadow-2xl p-6 relative"> <button onclick="App.toggleEmergencyModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"> <i data-lucide="x" class="w-6 h-6"></i> </button> 
+    <div id="emergency-content"> <!-- Emergency contacts rendered by JS --> 
+    </div> 
+   </div> 
+  </div> <!-- JavaScript Application Logic --> 
+  <script>
+        const NAV_PAGES = {
+            HOME: 'home',
+            ATTRACTIONS: 'attractions',
+            GUIDES: 'guides',
+            MAP: 'map',
+            APPOINTMENTS: 'appointments',
+            DETAIL: 'detail',
+        };
+
+        const DATA = {
+            // Using approximate coordinates for visualization purposes only
+            lakes: [
+                { id: 1, name: 'Lake Sampaloc', tagline: 'The largest and most popular of the Seven Lakes...', location: 'Barangay San Lorenzo, San Pablo City, Laguna', hours: '6:00 AM - 5:00 PM', fee: '₱80 per person', image: 'https://placehold.co/600x400/2962FF/ffffff?text=Sampaloc', famousFor: ['Boating', 'Food Stalls'], coords: { lat: 14.075, lng: 121.320 } },
+                { id: 2, name: 'Lake Palakpakin', tagline: 'Often called the "weeping lake"...', location: 'Barangay San Buenaventura, San Pablo...', hours: '6:00 AM - 5:00 PM', fee: '₱80 per person', image: 'https://placehold.co/600x400/00C853/ffffff?text=Palakpakin', famousFor: ['Fishing', 'Quiet retreat'], coords: { lat: 14.100, lng: 121.345 } },
+                { id: 3, name: 'Lake Yambo', tagline: 'The deepest of the Seven Lakes...', location: 'Barangay San Lorenzo, San Pablo City...', hours: '5:00 AM - 6:00 PM', fee: '₱40 per person', image: 'https://placehold.co/600x400/FFAB00/ffffff?text=Yambo', famousFor: ['Nature Tours'], coords: { lat: 14.050, lng: 121.300 } },
+                { id: 4, name: 'Lake Pandin', tagline: 'A pristine twin lake connected to Lake Yambo...', location: 'Barangay San Lorenzo, San Pablo City, Laguna', hours: '7:00 AM - 5:00 PM', fee: '₱150 per person (includes bamboo raft)', image: 'https://placehold.co/600x400/1e40af/ffffff?text=Pandin', famousFor: ['Bamboo raft tours', 'Swimming'], coords: { lat: 14.055, lng: 121.305 } },
+                { id: 5, name: 'Lake Calibato', tagline: 'One of the smaller but charming lakes...', location: 'Barangay Del Remedio, San Pablo City...', hours: '5:00 AM - 6:00 PM', fee: '₱60 per person', image: 'https://placehold.co/600x400/800080/ffffff?text=Calibato', famousFor: ['Quiet hike'], coords: { lat: 14.090, lng: 121.315 } },
+                { id: 6, name: 'Lake Muhicap', tagline: 'A known spot among the Seven Lakes...', location: 'Barangay San Lorenzo, San Pablo City...', hours: '6:00 AM - 5:00 PM', fee: '₱80 per person', image: 'https://placehold.co/600x400/00BCD4/ffffff?text=Muhicap', famousFor: ['Nature Photography', 'Kayaking'], coords: { lat: 14.070, lng: 121.290 } },
+                { id: 7, name: 'Lake Bunot', tagline: 'The smallest but sweetest...', location: 'Barangay San Lorenzo, San Pablo City...', hours: '6:00 AM - 5:00 PM', fee: '₱80 per person', image: 'https://placehold.co/600x400/00BCD4/ffffff?text=Bunot', famousFor: ['Nature Photography', 'Kayaking'], coords: { lat: 14.105, lng: 121.325 } },
+            ],
+            guides: [
+                { id: 1, name: 'Carlos Mendoza', rating: 4.8, experience: 8, languages: 'English, Filipino, Spanish', verified: true, specializations: ['Seven Lakes Tour', 'Nature Tours', 'Photography Tours'], contact: '+63 917 123 4567', avatar: 'https://placehold.co/50x50/3b82f6/ffffff?text=CM' },
+                { id: 2, name: 'Maria Santos', rating: 4.6, experience: 6, languages: 'English, Filipino', verified: true, specializations: ['Historical Tours', 'Cultural Heritage', 'Church Tours'], contact: '+63 918 234 5678', avatar: 'https://placehold.co/50x50/f97316/ffffff?text=MS' },
+                { id: 3, name: 'Juan Dela Cruz', rating: 4.7, experience: 10, languages: 'English, Filipino, Japanese', verified: true, specializations: ['Adventure Tours', 'Lake Activities', 'Eco-Tourism'], contact: '+63 919 345 6789', avatar: 'https://placehold.co/50x50/10b981/ffffff?text=JC' },
+                { id: 4, name: 'Ana Reyes', rating: 4.9, experience: 5, languages: 'English, Filipino, Korean', verified: true, specializations: ['Food Tours', 'Ground Experiences', 'Family Tours'], contact: '+63 920 456 7890', avatar: 'https://placehold.co/50x50/ef4444/ffffff?text=AR' },
+            ],
+            emergencyContacts: [
+                { category: 'POLICE', items: [{ name: 'San Pablo City Police Station', number: '(049) 562-2222' }, { name: 'PNP Emergency', number: '911' }] },
+                { category: 'FIRE', items: [{ name: 'Bureau of Fire Protection - San Pablo', number: '(049) 562-3333' }] },
+                { category: 'MEDICAL', items: [{ name: 'San Pablo City Hospital', number: '(049) 562-4444' }, { name: 'Red Cross San Pablo Chapter', number: '(049) 562-6666' }] },
+                { category: 'TOURISM', items: [{ name: 'San Pablo Tourism Office', number: '(049) 562-8888' }] },
+            ],
+            whyVisit: [
+                { icon: 'mountain', title: 'Natural Beauty', description: 'Home to the famous Seven Lakes, each with unique characteristics and stunning views.' },
+                { icon: 'book-open', title: 'Rich History', description: 'Explore centuries-old churches and heritage sites that tell the story of our city.' },
+                { icon: 'dollar-sign', title: 'Affordable', description: 'Experience world-class tourism without breaking the bank, with most attractions under ₱200.' },
+            ]
+        };
+
+        const App = {
+            currentView: NAV_PAGES.MAP,
+            selectedAttraction: null,
+
+            // --- Navigation and Rendering ---
+            init: function() {
+                // Initialize icon replacement
+                lucide.createIcons();
+
+                // Render Navigation Tabs
+                this.renderNavTabs();
+
+                // Render Emergency Content once
+                this.renderEmergencyContent();
+
+                // Navigate to the initial view (now MAP) on load
+                this.navigate(this.currentView);
+            },
+
+            renderNavTabs: function() {
+                const navTabs = document.getElementById('nav-tabs');
+                navTabs.innerHTML = '';
+                const tabs = [
+                    { key: NAV_PAGES.HOME, label: 'Home', icon: 'home' },
+                    { key: NAV_PAGES.ATTRACTIONS, label: 'Attractions', icon: 'heart' },
+                    { key: NAV_PAGES.GUIDES, label: 'Tourist Guides', icon: 'users' },
+                    { key: NAV_PAGES.MAP, label: 'Map', icon: 'map' },
+                    { key: NAV_PAGES.APPOINTMENTS, label: 'Appointments', icon: 'calendar' },
+                ];
+
+                tabs.forEach(tab => {
+                    const isActive = this.currentView === tab.key;
+                    const button = document.createElement('button');
+                    button.setAttribute('onclick', `App.navigate('${tab.key}')`);
+                    button.className = `px-3 py-2 rounded-full transition-colors duration-200 flex items-center text-sm ${
+                        isActive
+                            ? 'bg-blue-800 text-white font-semibold shadow-lg'
+                            : 'text-gray-600 hover:bg-gray-100'
+                    }`;
+                    button.innerHTML = `
+                        <span class="hidden sm:inline">${tab.label}</span>
+                    `;
+                    navTabs.appendChild(button);
+                });
+
+                // Re-render Lucide icons after updating innerHTML
+                lucide.createIcons();
+            },
+
+            navigate: function(view, data = null) {
+                // Hide all views first
+                document.querySelectorAll('.content-view').forEach(el => {
+                    el.classList.add('hidden-view');
+                    el.classList.remove('flex'); // Ensure flex is removed if it was used for centering
+                });
+
+                // Update state and current view
+                this.currentView = view;
+                this.selectedAttraction = data;
+
+                const targetView = document.getElementById(`view-${view}`);
+                if (!targetView) {
+                    console.error(`View ${view} not found.`);
+                    return;
+                }
+
+                // Render the content for the new view
+                switch (view) {
+                    case NAV_PAGES.HOME:
+                        this.renderHome(targetView);
+                        break;
+                    case NAV_PAGES.ATTRACTIONS:
+                        this.renderAttractions(targetView);
+                        break;
+                    case NAV_PAGES.GUIDES:
+                        this.renderGuides(targetView);
+                        break;
+                    case NAV_PAGES.MAP:
+                        this.renderMap(targetView);
+                        break;
+                    case NAV_PAGES.APPOINTMENTS:
+                        this.renderAppointments(targetView);
+                        break;
+                    case NAV_PAGES.DETAIL:
+                        if (data) this.renderDetail(targetView, data);
+                        break;
+                }
+
+                // Show the target view
+                targetView.classList.remove('hidden-view');
+
+                // Update navigation tabs style
+                this.renderNavTabs();
+
+                // Re-render Lucide icons for the new view and footer
+                lucide.createIcons();
+                window.scrollTo(0, 0); // Scroll to top
+            },
+            
+            // --- Helper for Facebook Embeds ---
+            renderFacebookEmbed: function() {
+                // NOTE: We cannot directly use the share link (https://www.facebook.com/share/r/1GDsN7vgno/)
+                // You must get the official embed code from the video/post on Facebook.
+                // The structure usually involves an iframe like this:
+                
+                const placeholderVideoUrl = "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2FSanPabloCityGovt%2Fvideos%2F123456789%2F&show_text=false&width=560&t=0";
+                
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-5 border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i data-lucide="facebook" class="w-6 h-6 mr-2 text-blue-600 icon-center"></i> 
+                            Local News & Social Highlight
+                        </h3>
+                        <p class="text-gray-600 mb-4 text-sm">
+                            <span class="font-semibold text-red-600">IMPORTANT:</span> To embed a Facebook Reel like the one you linked, 
+                            you must get the official "Embed Code" and use it here. Direct share links won't work due to security.
+                        </p>
+                        
+                        <!-- MOCK FACEBOOK EMBED IFRAME -->
+                        <div class="relative w-full overflow-hidden rounded-lg shadow-xl" style="padding-top: 56.25%">
+                            <!-- 
+                                Replace the entire iframe below with the *actual* Facebook embed code you generate 
+                                for the specific Reel or video you want to display.
+                            -->
+                            <iframe 
+                                src="https://www.youtube.com/embed/S2gXjK95e7M" 
+                                class="absolute top-0 left-0 w-full h-full"
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen
+                                title="Placeholder for San Pablo Tourism Video"
+                            ></iframe>
+                        </div>
+                        <!-- END MOCK EMBED -->
+                        
+                        <a href="https://facebook.com/SanPabloCityGovt" target="_blank" class="block mt-4 text-center text-blue-600 hover:text-blue-800 font-medium">
+                            Visit our Official Facebook Page
+                        </a>
+                    </div>
+                `;
+            },
+
+
+            // --- Home View Rendering ---
+            renderHome: function(container) {
+                const pandinLake = DATA.lakes.find(l => l.name === 'Lake Pandin') || DATA.lakes[0];
+
+                const whyVisitHtml = DATA.whyVisit.map(item => `
+                    <div class="bg-white/95 p-6 rounded-xl shadow-lg text-center backdrop-blur-sm">
+                        <div class="flex justify-center mb-3">
+                            <i data-lucide="${item.icon}" class="w-6 h-6 text-blue-500 icon-center"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 mb-2">${item.title}</h4>
+                        <p class="text-gray-600 text-sm">${item.description}</p>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <!-- Hero Section -->
+                    <div class="bg-blue-800/80 text-white py-16 rounded-b-3xl shadow-xl backdrop-blur-sm">
+                        <div class="max-w-7xl mx-auto px-4 text-center">
+                            <h2 class="text-4xl font-extrabold mb-3">Welcome to San Pablo City</h2>
+                            <p class="text-blue-200 max-w-2xl mx-auto">
+                                Discover the beauty of the **Seven Lakes** and explore the rich history and culture of San Pablo City, Laguna.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Main Attraction Highlight (2/3 width on large screens) -->
+                        <section class="lg:col-span-2">
+                            <h3 class="text-2xl font-bold text-white mb-6 drop-shadow-lg">Explore Our Attractions</h3>
+                            <div class="flex flex-col md:flex-row bg-white rounded-2xl shadow-xl overflow-hidden">
+                                <div class="md:w-1/2">
+                                    <img
+                                        src="${pandinLake.image}"
+                                        alt="${pandinLake.name}"
+                                        class="w-full h-64 md:h-full object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none"
+                                        onerror="this.onerror=null;this.src='https://placehold.co/600x400/1e40af/ffffff?text=Lake+Pandin+Image';"
+                                    />
+                                </div>
+                                <div class="md:w-1/2 p-6 flex flex-col justify-center">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2">LAKE</span>
+                                    <h4 class="text-3xl font-bold text-gray-900">${pandinLake.name}</h4>
+                                    <p class="text-gray-600 mt-2 mb-4">${pandinLake.tagline}</p>
+                                    <div class="space-y-2 text-gray-700">
+                                        <p class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${pandinLake.location.split(',')[0]}</p>
+                                        <p class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${pandinLake.hours}</p>
+                                        <p class="flex items-center"><i data-lucide="dollar-sign" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${pandinLake.fee}</p>
+                                    </div>
+                                    <button
+                                        onclick="App.navigate('${NAV_PAGES.DETAIL}', DATA.lakes.find(l => l.id === ${pandinLake.id}))"
+                                        class="mt-6 bg-blue-800 hover:bg-blue-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-lg flex items-center justify-center"
+                                    >
+                                        View Details & Book Appointment
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Facebook Embed Highlight (1/3 width on large screens) -->
+                        <section class="lg:col-span-1">
+                            ${App.renderFacebookEmbed()}
+                        </section>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <section class="py-12">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                            <div class="p-4 bg-white/95 rounded-xl shadow-lg backdrop-blur-sm">
+                                <p class="text-4xl font-extrabold text-blue-800">7+</p>
+                                <p class="text-gray-500 mt-1">Famous Lakes</p>
+                            </div>
+                            <div class="p-4 bg-white/95 rounded-xl shadow-lg backdrop-blur-sm">
+                                <p class="text-4xl font-extrabold text-blue-800">15+</p>
+                                <p class="text-gray-500 mt-1">Attractions</p>
+                            </div>
+                            <div class="p-4 bg-white/95 rounded-xl shadow-lg backdrop-blur-sm">
+                                <p class="text-4xl font-extrabold text-blue-800">5+</p>
+                                <p class="text-gray-500 mt-1">Verified Guides</p>
+                            </div>
+                            <div class="p-4 bg-white/95 rounded-xl shadow-lg backdrop-blur-sm">
+                                <p class="text-4xl font-extrabold text-blue-800">24/7</p>
+                                <p class="text-gray-500 mt-1">Support</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Why Visit Section -->
+                    <section class="pb-10">
+                        <h3 class="text-2xl font-bold text-white mb-6 text-center drop-shadow-lg">Why Visit San Pablo City?</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            ${whyVisitHtml}
+                        </div>
+                    </section>
+                `;
+            },
+
+            // --- Attractions View Rendering ---
+            renderAttractions: function(container) {
+                const attractionCards = DATA.lakes.map(lake => `
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+                        <div class="relative">
+                            <img
+                                src="${lake.image}"
+                                alt="${lake.name}"
+                                class="w-full h-40 object-cover"
+                                onerror="this.onerror=null;this.src='https://placehold.co/600x400/1e40af/ffffff?text=${lake.name.replace(/ /g, '+')}';"
+                            />
+                            <span class="absolute top-2 left-2 bg-blue-800/90 text-white text-xs font-semibold px-2 py-1 rounded-full backdrop-blur-sm">LAKE</span>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-1">${lake.name}</h3>
+                            <p class="text-sm text-gray-600 line-clamp-2">${lake.tagline}</p>
+                            <div class="mt-3 space-y-1 text-sm text-gray-700">
+                                <p class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${lake.location.split(',')[0]}</p>
+                                <p class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${lake.hours}</p>
+                                <p class="flex items-center"><i data-lucide="dollar-sign" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${lake.fee.split('(')[0]}</p>
+                            </div>
+                            <button
+                                onclick="App.navigate('${NAV_PAGES.DETAIL}', DATA.lakes.find(l => l.id === ${lake.id}))"
+                                class="w-full mt-4 bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2 rounded-lg transition-colors duration-200"
+                            >
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="py-8">
+                        <h2 class="text-3xl font-bold text-white mb-6 drop-shadow-lg">All Attractions</h2>
+                        <div class="flex space-x-3 mb-6 overflow-x-auto pb-2">
+                            <button class="bg-blue-800 text-white px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 shadow-md">Seven Lakes Heritage Sites</button>
+                            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-300 flex-shrink-0 shadow-md">Nature</button>
+                            <button class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-300 flex-shrink-0 shadow-md">Cultural</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${attractionCards}
+                        </div>
+                    </div>
+                `;
+            },
+
+            // --- Attraction Detail View Rendering ---
+            renderDetail: function(container, attraction) {
+                if (!attraction) {
+                    container.innerHTML = '<div class="p-8 text-center text-white bg-black/50 rounded-xl">Attraction not found.</div>';
+                    return;
+                }
+
+                const recommendedGuide = DATA.guides.find(g => g.specializations.includes('Bamboo raft tours')) || DATA.guides[0];
+
+                const tagsHtml = attraction.famousFor.map(tag => `
+                    <span class="bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">${tag}</span>
+                `).join('');
+
+                const guideCard = (guide) => `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div class="flex items-center">
+                            <img src="${guide.avatar}" alt="${guide.name}" class="w-12 h-12 rounded-full object-cover mr-3" />
+                            <div>
+                                <p class="font-semibold text-gray-900 flex items-center">
+                                    ${guide.name}
+                                    ${guide.verified ? '<i data-lucide="check-circle" class="w-4 h-4 text-green-500 ml-1 icon-center"></i>' : ''}
+                                </p>
+                                ${this.renderStarRating(guide.rating)}
+                                <p class="text-xs text-gray-500">${guide.experience} years experience · ${guide.languages}</p>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    ${guide.specializations.slice(0, 3).map(spec => `<span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">${spec}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="App.navigate('${NAV_PAGES.GUIDES}')" class="bg-blue-800 hover:bg-blue-900 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors">
+                            Book with Guide
+                        </button>
+                    </div>
+                `;
+
+                const infoRow = (icon, label, value) => `
+                    <div class="flex border-b pb-2">
+                        <i data-lucide="${icon}" class="w-6 h-6 mr-3 text-blue-800 flex-shrink-0 icon-center"></i>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">${label}</p>
+                            <p class="text-lg font-medium text-gray-900">${value}</p>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                    <div class="py-8">
+                        <button onclick="App.navigate('${NAV_PAGES.ATTRACTIONS}')" class="text-white font-medium mb-4 flex items-center hover:underline drop-shadow-lg">
+                            <i data-lucide="arrow-left" class="w-5 h-5 mr-2 icon-center"></i> Back to Attractions
+                        </button>
+                        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+                            <!-- Hero Image -->
+                            <div class="relative h-64">
+                                <img
+                                    src="${attraction.image}"
+                                    alt="${attraction.name}"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.onerror=null;this.src='https://placehold.co/800x300/1e40af/ffffff?text=${attraction.name.replace(/ /g, '+')}';"
+                                />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-6 flex items-end">
+                                    <div>
+                                        <span class="bg-blue-100/90 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-1 backdrop-blur-sm">LAKE</span>
+                                        <h1 class="text-4xl font-extrabold text-white">${attraction.name}</h1>
+                                        <p class="text-gray-200 text-lg">${attraction.tagline.split(',')[1]?.trim() || attraction.tagline}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 space-y-8">
+                                <!-- About This Place -->
+                                <div class="border-b pb-4">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-3">About This Place</h2>
+                                    <p class="text-gray-700">${attraction.tagline}. It has been preserved as an eco-tourism site through an underground channel. It has been preserved as an eco-tourism site with strict environmental protection.</p>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        ${tagsHtml}
+                                    </div>
+                                </div>
+
+                                <!-- Recommended Tourist Guides -->
+                                <div class="border-b pb-4">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-3">Recommended Tourist Guides</h2>
+                                    <div class="space-y-3">
+                                        ${guideCard(recommendedGuide)}
+                                        ${guideCard(DATA.guides.find(g => g.id === 3))}
+                                    </div>
+                                </div>
+
+                                <!-- Visit Information -->
+                                <div class="space-y-4">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Visit Information</h2>
+                                    <div class="space-y-3">
+                                        ${infoRow('map-pin', 'Location', attraction.location)}
+                                        ${infoRow('clock', 'Opening Hours', attraction.hours)}
+                                        ${infoRow('dollar-sign', 'Entry Fee', attraction.fee)}
+                                        ${infoRow('phone', 'Contact Number', '+63 49 562 2459')}
+                                    </div>
+                                </div>
+
+                                <!-- Plan Your Visit / Booking -->
+                                <div class="bg-blue-50 p-4 rounded-xl shadow-inner border border-blue-200">
+                                    <h3 class="font-semibold text-lg text-blue-800 flex items-center mb-2">
+                                        <i data-lucide="calendar" class="w-5 h-5 mr-2 icon-center"></i> Plan Your Visit
+                                    </h3>
+                                    <p class="text-blue-700 mb-4">Book an appointment today to secure your slot.</p>
+                                    <button
+                                        onclick="App.navigate('${NAV_PAGES.APPOINTMENTS}')"
+                                        class="w-full bg-blue-800 hover:bg-blue-900 text-white font-extrabold py-3 rounded-xl transition-colors shadow-md"
+                                    >
+                                        Book Appointment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            // --- Guide View Rendering ---
+            renderGuides: function(container) {
+                const guideCards = DATA.guides.map(guide => `
+                    <div class="bg-white rounded-xl shadow-lg p-5 flex flex-col transition-shadow duration-300 hover:shadow-xl border border-gray-100">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center">
+                                <img src="${guide.avatar}" alt="${guide.name}" class="w-16 h-16 rounded-full object-cover mr-4 shadow-md" />
+                                <div>
+                                    <p class="font-bold text-xl text-gray-900 flex items-center">
+                                        ${guide.name}
+                                        ${guide.verified ? '<i data-lucide="check-circle" class="w-5 h-5 text-green-500 ml-2 icon-center"></i>' : ''}
+                                    </p>
+                                    ${this.renderStarRating(guide.rating)}
+                                    <p class="text-sm text-gray-600 mt-1">${guide.experience} years experience</p>
+                                    <p class="text-sm text-gray-600 flex items-center">
+                                        <i data-lucide="book-open" class="w-4 h-4 mr-1 text-blue-500 icon-center"></i> ${guide.languages}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center h-fit">
+                                <i data-lucide="check-circle" class="w-4 h-4 mr-1 icon-center"></i> Verified
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <p class="font-medium text-sm text-gray-500 mb-2">Specializations:</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${guide.specializations.map(spec => `<span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">${spec}</span>`).join('')}
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex justify-between items-center pt-3 border-t border-gray-100">
+                            <p class="text-lg font-bold text-gray-700 flex items-center">
+                                <i data-lucide="phone" class="w-4 h-4 mr-2 text-blue-500 icon-center"></i> ${guide.contact}
+                            </p>
+                            <button onclick="App.navigate('${NAV_PAGES.APPOINTMENTS}')" class="bg-blue-800 hover:bg-blue-900 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors shadow-md">
+                                Book with Guide
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="py-8">
+                        <h2 class="text-3xl font-bold text-white mb-6 drop-shadow-lg">Tourist Guides</h2>
+                        <div class="bg-blue-50/90 p-4 rounded-xl mb-6 shadow-inner border border-blue-200 backdrop-blur-sm">
+                            <h3 class="font-semibold text-blue-800 mb-2">Why Book a Verified Guide?</h3>
+                            <ul class="list-disc list-inside text-sm text-blue-700 space-y-1 ml-4">
+                                <li>Certified and background-checked professionals</li>
+                                <li>Expert knowledge of local attractions and history</li>
+                                <li>Safe and reliable tour experience</li>
+                                <li>Support local tourism economy</li>
+                            </ul>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${guideCards}
+                        </div>
+                    </div>
+                `;
+            },
+
+            // --- Map View Rendering (Updated for iframe) ---
+            renderMap: function(container) {
+                // Using the public Google Maps embed URL for San Pablo City. This does not require an API key.
+                const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15470.925482937397!2d121.31294870505556!3d14.075908298701046!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33bd57917c664333%3A0x82f42a784d0092c4!2sSan%20Pablo%20City%2C%20Laguna!5e0!3m2!1sen!2sph!v1699027200000!5m2!1sen!2sph";
+                const directMapLink = `https://www.google.com/maps/search/?api=1&query=San+Pablo+City,+Laguna&zoom=14`;
+
+                container.innerHTML = `
+                    <div class="py-8 max-w-lg mx-auto w-full">
+                        <h2 class="text-3xl font-bold text-white mb-8 text-center drop-shadow-lg">San Pablo City Map</h2>
+
+                        <div class="bg-white rounded-xl shadow-2xl overflow-hidden p-3 map-card-border w-full">
+                            <h3 class="text-xl font-semibold text-gray-800 mt-2 mb-3 text-center">Laguna</h3>
+
+                            <!-- Google Maps Iframe Embed -->
+                            <div class="relative mb-4 w-full" style="padding-bottom: 75%; height: 0;">
+                                <iframe
+                                    src="${mapEmbedUrl}"
+                                    width="100%"
+                                    height="100%"
+                                    style="border:0; position: absolute; top: 0; left: 0;"
+                                    allowfullscreen=""
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    title="San Pablo City Map"
+                                ></iframe>
+                            </div>
+
+                            <p class="text-center text-gray-600 mb-4 text-sm font-medium">
+                                Zoom, pan, and explore our location in the CALABARZON region.
+                            </p>
+
+                            <a href="${directMapLink}" target="_blank" class="w-full flex items-center justify-center bg-blue-800 hover:bg-blue-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200 shadow-md">
+                                <i data-lucide="external-link" class="w-5 h-5 mr-2 icon-center"></i> View Larger Map
+                            </a>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            },
+
+            // --- Appointments View Rendering ---
+            renderAppointments: function(container) {
+                container.classList.add('flex', 'justify-center');
+                container.innerHTML = `
+                    <div class="py-8 w-full">
+                        <div class="bg-white p-6 rounded-xl shadow-2xl border border-gray-100">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Track Your Appointment</h2>
+                            <p class="text-gray-600 mb-4 text-center">Track your appointment status by entering your email address</p>
+
+                            <div class="space-y-4">
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                                <div class="relative">
+                                    <i data-lucide="mail" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 icon-center"></i>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        placeholder="Enter the email you used to book"
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                                <button
+                                    onclick="App.showAppointmentStatus()"
+                                    class="w-full bg-blue-800 hover:bg-blue-900 text-white font-extrabold py-3 rounded-xl transition-colors shadow-lg flex items-center justify-center"
+                                >
+                                    <i data-lucide="search" class="w-5 h-5 mr-2 icon-center"></i> Search My Appointments
+                                </button>
+                            </div>
+
+                            <div id="appointment-status" class="mt-6 p-4 bg-gray-50 rounded-xl hidden">
+                                <p class="text-sm font-medium text-gray-800">Status for <span id="status-email" class="font-bold"></span>:</p>
+                                <div class="flex justify-between items-center mt-2 p-3 border-l-4 border-green-500 bg-white rounded-lg shadow-sm">
+                                    <div>
+                                        <p class="font-semibold text-lg text-gray-800">Lake Pandin Tour</p>
+                                        <p class="text-sm text-gray-600">Date: Dec 15, 2025 | Guide: Carlos Mendoza</p>
+                                    </div>
+                                    <span class="text-green-600 font-bold text-sm bg-green-100 px-3 py-1 rounded-full">APPROVED</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 pt-6 border-t border-gray-200">
+                                <h3 class="font-bold text-lg text-gray-800 mb-3">How to Track Your Appointment</h3>
+                                <ol class="space-y-2 text-gray-700">
+                                    <li class="flex items-start">
+                                        <span class="font-semibold mr-2 text-blue-800">1.</span>
+                                        <span>Enter the email address you used when booking your appointment.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="font-semibold mr-2 text-blue-800">2.</span>
+                                        <span>Click "Search My Appointments" to view your bookings.</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="font-semibold mr-2 text-blue-800">3.</span>
+                                        <span>Check the status of each appointment (Pending, Approved, or Cancelled).</span>
+                                    </li>
+                                </ol>
+                                <p class="mt-4 text-sm">
+                                    <span class="text-blue-800 font-semibold">Need help?</span> Contact the San Pablo Tourism Office at (049) 562-8888 or visit our office.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons(); // Re-initialize icons
+            },
+
+            showAppointmentStatus: function() {
+                const emailInput = document.getElementById('email');
+                const statusDiv = document.getElementById('appointment-status');
+                const statusEmail = document.getElementById('status-email');
+
+                if (emailInput.value.trim() !== '') {
+                    statusEmail.textContent = emailInput.value;
+                    statusDiv.classList.remove('hidden');
+                } else {
+                    statusDiv.classList.add('hidden');
+                }
+            },
+
+            // --- Emergency Modal Handling ---
+            renderEmergencyContent: function() {
+                const modalContent = document.getElementById('emergency-content');
+                const contactsHtml = DATA.emergencyContacts.map(group => {
+                    const itemsHtml = group.items.map(item => {
+                        const cleanedNumber = item.number.replace(/[^0-9+]/g, '');
+                        return `
+                            <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                                <div class="text-gray-800">
+                                    <p class="font-medium">${item.name}</p>
+                                    <p class="text-sm text-gray-600">${item.number}</p>
+                                </div>
+                                <a href="tel:${cleanedNumber}" class="text-blue-600 hover:text-blue-800 flex items-center text-sm font-semibold">
+                                    <i data-lucide="phone" class="w-4 h-4 mr-1 icon-center"></i> Call
+                                </a>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="space-y-2">
+                            <h3 class="font-bold text-sm tracking-widest text-gray-500 uppercase border-b-2 border-red-500 pb-1 mt-4">${group.category}</h3>
+                            ${itemsHtml}
+                        </div>
+                    `;
+                }).join('');
+
+                modalContent.innerHTML = `
+                    <h2 class="text-xl font-bold text-red-600 flex items-center mb-4 border-b pb-3">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 mr-2 icon-center"></i> Emergency Hotlines
+                    </h2>
+                    <div class="bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
+                        <p class="text-red-800 text-sm font-semibold">
+                            Important contact numbers for emergencies in San Pablo City.
+                        </p>
+                        <button class="mt-2 text-sm bg-red-600 text-white py-1 px-3 rounded-lg hover:bg-red-700 transition">
+                            <i data-lucide="message-square" class="w-4 h-4 inline mr-1 icon-center"></i> Report Emergency
+                        </button>
+                    </div>
+                    <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        ${contactsHtml}
+                    </div>
+                `;
+            },
+
+            toggleEmergencyModal: function(show) {
+                const modal = document.getElementById('emergency-modal');
+                if (show) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                } else {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+                lucide.createIcons();
+            },
+
+            // --- Utility Functions ---
+            renderStarRating: function(rating) {
+                const fullStars = Math.floor(rating);
+                const hasHalfStar = rating % 1 !== 0;
+                const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                let html = '<div class="flex items-center space-x-0.5">';
+
+                // Full stars
+                for (let i = 0; i < fullStars; i++) {
+                    html += '<i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-current icon-center"></i>';
+                }
+                // Half star (mocked using opacity)
+                if (hasHalfStar) {
+                    html += '<i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-current opacity-50 icon-center"></i>';
+                }
+                // Empty stars
+                for (let i = 0; i < emptyStars; i++) {
+                    html += '<i data-lucide="star" class="w-4 h-4 text-gray-300 icon-center"></i>';
+                }
+
+                html += `<span class="text-sm font-semibold text-gray-700 ml-1">${rating}</span></div>`;
+                return html;
+            }
+        };
+
+        // Initialize the application when the window loads
+        window.onload = function() {
+            App.init();
+        };
+        
+    </script> 
+ 
+</body></html>
